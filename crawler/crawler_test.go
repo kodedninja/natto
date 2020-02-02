@@ -41,12 +41,14 @@ func TestCrawl(t *testing.T) {
 	expected := SiteMap{
 		Pages: map[string]parser.PageDetails{
 			addr: parser.PageDetails{
+				StatusCode: 200,
 				InternalLinks: []string{
 					addr + "/about.html",
 					addr + "/blog.html",
 				},
 			},
 			addr + "/about.html": parser.PageDetails{
+				StatusCode: 200,
 				InternalLinks: []string{
 					addr + "/blog.html",
 				},
@@ -55,6 +57,7 @@ func TestCrawl(t *testing.T) {
 				},
 			},
 			addr + "/blog.html": parser.PageDetails{
+				StatusCode: 200,
 				ExternalLinks: []string{
 					"https://google.com",
 					"https://bbc.com",
@@ -178,8 +181,11 @@ func TestGetWebpage(t *testing.T) {
 	killServer := startServer(t, PORT)
 	defer killServer()
 	u := mustParse(t, addr)
-	body, _ := getWebpage(u)
+	body, status_code, _ := getWebpage(u)
 	if string(body) != expectedOutput {
 		t.Fatalf("Expected %s. got %s", expectedOutput, string(body))
+	}
+	if status_code != 200 {
+		t.Fatalf("Expected %d. got %d", 200, status_code)
 	}
 }

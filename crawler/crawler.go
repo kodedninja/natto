@@ -29,7 +29,7 @@ type Crawler struct {
 	startURL *url.URL
 	siteMap  *SiteMap
 	idx      index
-	concur int
+	concur   int
 }
 
 // New instantiates and returns a new Crawler.
@@ -80,12 +80,13 @@ func crawlPage(startURL *url.URL, urls <-chan *url.URL, results chan<- namedPage
 	for {
 		select {
 		case u := <-urls:
-			body, err := getWebpage(u)
+			body, status_code, err := getWebpage(u)
 			if err != nil {
 				log.Printf("Error reading webpage '%s': %v", u, err)
 				return
 			}
 			details := parser.ParseWebpage(startURL, bytes.NewReader(body))
+			details.StatusCode = status_code
 			namedDetails := namedPageDetails{
 				url:     u,
 				details: details,
@@ -154,16 +155,16 @@ func (i index) getUnvisitedLinks() []*url.URL {
 }
 
 // getWebpage gets and returns the contents of a webpage.
-func getWebpage(u *url.URL) ([]byte, error) {
+func getWebpage(u *url.URL) ([]byte, uint16, error) {
 	log.Printf("Fetching HTML from '%s'", u)
 	resp, err := http.Get(u.String())
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, uint16(resp.StatusCode), err
 	}
-	return body, nil
+	return body, uint16(resp.StatusCode), nil
 }

@@ -11,6 +11,7 @@ import (
 
 // PageDetails describes certain properties of an HTML page.
 type PageDetails struct {
+	StatusCode    uint16   `json:"status_code"`
 	InternalLinks []string `json:"internal_links"`
 	ExternalLinks []string `json:"external_links"`
 	Assets        []string `json:"assets"`
